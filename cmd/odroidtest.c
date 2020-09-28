@@ -52,7 +52,7 @@ void adc_draw_key_arrays(void)
 	lcd_setfg_color("white");
 	lcd_printf(0, 1, 1, "[ ADC KEY TEST ]");
 
-	for (i = 0; i < 4; i++) {
+	for (i = 0; i < 6; i++) {
 		if (adckeys[i].chk)
 			lcd_setfg_color("blue");
 		else
@@ -64,13 +64,15 @@ void adc_draw_key_arrays(void)
 }
 
 #define ADC_CENTER_CHECK_COUNT	10
-int adc_get_center(unsigned int *center_x, unsigned int *center_y)
+int adc_get_center(unsigned int *center_x, unsigned int *center_y, unsigned int *center_z)
 {
 	int i = 0;
-	unsigned int val_x, val_y;
+	unsigned int val_x, val_y, val_z;
 
 	*center_x = 0;
 	*center_y = 0;
+	
+    *center_z = 0;//for volume down/up
 
 	while (i < ADC_CENTER_CHECK_COUNT) {
 		if (adc_channel_single_shot("saradc", 1, &val_x)) {
@@ -78,13 +80,19 @@ int adc_get_center(unsigned int *center_x, unsigned int *center_y)
 			return CMD_RET_FAILURE;
 		}
 
-		if (adc_channel_single_shot("saradc", 2, &val_y)) {
+		if (adc_channel_single_shot("saradc", 0, &val_y)) {
+			printf("adc_channel_single_shot fail!\n");
+			return CMD_RET_FAILURE;
+		}
+
+		if (adc_channel_single_shot("saradc", 2, &val_z)) {
 			printf("adc_channel_single_shot fail!\n");
 			return CMD_RET_FAILURE;
 		}
 
 		*center_x += val_x;
 		*center_y += val_y;
+		*center_z += val_z;
 
 		mdelay(50);
 		i++;
@@ -92,6 +100,7 @@ int adc_get_center(unsigned int *center_x, unsigned int *center_y)
 
 	*center_x /= ADC_CENTER_CHECK_COUNT;
 	*center_y /= ADC_CENTER_CHECK_COUNT;
+	*center_z /= ADC_CENTER_CHECK_COUNT;
 
 	return CMD_RET_SUCCESS;
 }
@@ -101,20 +110,20 @@ static int do_odroidtest_adc(cmd_tbl_t * cmdtp, int flag,
 				int argc, char * const argv[])
 {
 	struct udevice *dev;
-	unsigned int val_x, val_y;
-	unsigned int center_x, center_y;
+	unsigned int val_x, val_y, val_z;
+	unsigned int center_x, center_y, center_z;
 	int adc_passed = 0;
 	int i;
 
 	if (uclass_get_device(UCLASS_ADC, 0, &dev))
 		return CMD_RET_FAILURE;
 
-	if (adc_get_center(&center_x, &center_y))
+	if (adc_get_center(&center_x, &center_y, &center_z))
 		return CMD_RET_FAILURE;
 
 	adc_draw_key_arrays();
 
-	while (adc_passed < 4) {
+	while (adc_passed < 6) {
 		/* XOUT */
 		if (adc_channel_single_shot("saradc", 1, &val_x)) {
 			printf("adc_channel_single_shot fail!\n");
@@ -122,13 +131,19 @@ static int do_odroidtest_adc(cmd_tbl_t * cmdtp, int flag,
 		}
 
 		/* YOUT */
-		if (adc_channel_single_shot("saradc", 2, &val_y)) {
+		if (adc_channel_single_shot("saradc", 0, &val_y)) {
 			printf("adc_channel_single_shot fail!\n");
 			return CMD_RET_FAILURE;
 		}
 
-		printf("center x %d y %d / value x %d, y %d\n",
-			center_x, center_y, val_x, val_y);
+		/* ZOUT */
+		if (adc_channel_single_shot("saradc", 2, &val_z)) {
+			printf("adc_channel_single_shot fail!\n");
+			return CMD_RET_FAILURE;
+		}
+
+		printf("center x %d y %d z %d / value x %d, y %d, z %d\n",
+			center_x, center_y, center_z, val_x, val_y, val_z);
 
 		/* LEFT */
 		if (val_x > center_x + ADC_CHECK_OFFSET) {
@@ -159,14 +174,28 @@ static int do_odroidtest_adc(cmd_tbl_t * cmdtp, int flag,
 				adc_passed++;
 			}
 		}
+        
+        if (val_z > 0 && val_z < 160 ) {
+			if (!adckeys[4].chk) {
+				adckeys[4].chk = 1;
+				adc_draw_key_arrays();
+				adc_passed++;
+			}
+        } else if (val_z > 160 && val_z < 180) {
+			if (!adckeys[5].chk) {
+				adckeys[5].chk = 1;
+				adc_draw_key_arrays();
+				adc_passed++;
+			}
+        }
 
 		mdelay(100);
 	}
 
 	lcd_setfg_color("white");
-	lcd_printf(0, 18, 1, "ADC KEY TEST PASS!");
+	lcd_printf(0, 20, 1, "ADC KEY TEST PASS!");
 
-	for (i = 0; i < 4; i++)
+	for (i = 0; i < 6; i++)
 		adckeys[i].chk = 0;
 
 	mdelay(1000);
@@ -197,8 +226,8 @@ static int do_odroidtest_backlight(cmd_tbl_t * cmdtp, int flag,
 		duty_ns = period_ns * active[loop] / 100;
 		printf("active percentage %d, duty_ns %d\n", active[loop], duty_ns);
 
-		lcd_printf(0, 8, 1, "PERCENTAGE : %d %", active[loop]);
-		lcd_printf(0, 12, 1, "Press any key to go on next step");
+		lcd_printf(0, 12, 1, "PERCENTAGE : %d %", active[loop]);
+		lcd_printf(0, 16, 1, "Press any key to go on next step");
 
 		if(pwm_set_config(dev, 1, period_ns, duty_ns))
 			return CMD_RET_FAILURE;
@@ -209,7 +238,7 @@ static int do_odroidtest_backlight(cmd_tbl_t * cmdtp, int flag,
 	}
 
 	lcd_setfg_color("black");
-	lcd_printf(0, 16, 1, "BACKLIGHT TEST DONE!");
+	lcd_printf(0, 20, 1, "BACKLIGHT TEST DONE!");
 
 	mdelay(1000);
 
@@ -248,7 +277,7 @@ static int do_odroidtest_lcd(cmd_tbl_t * cmdtp, int flag,
 	}
 
 	lcd_setfg_color("yellow");
-	lcd_printf(0, 14, 1, "LCD TEST DONE!");
+	lcd_printf(0, 20, 1, "LCD TEST DONE!");
 
 	mdelay(1000);
 
@@ -360,7 +389,7 @@ static int do_odroidtest_all(cmd_tbl_t * cmdtp, int flag,
 
 	lcd_clear();
 	lcd_setfg_color("yellow");
-	lcd_printf(0, 9, 1, "AUTO TEST DONE!");
+	lcd_printf(0, 15, 1, "AUTO TEST DONE!");
 
 	return ret;
 }
