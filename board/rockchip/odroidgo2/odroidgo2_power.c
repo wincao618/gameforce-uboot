@@ -13,7 +13,7 @@
 #define MIN_VOL_LEVEL	3500	/* 3.5V */
 
 #define DC_DET_GPIO	11	/* GPIO0_B3 */
-#define CHG_LED_GPIO	13	/* GPIO0_B5 */
+#define CHG_LED_GPIO	106	/* GPIO3_B2 */
 
 void board_chg_led(void)
 {
