@@ -300,13 +300,13 @@ static void panel_simple_prepare(struct rockchip_panel *panel)
 		mdelay(plat->delay.prepare);
 
 	if (dm_gpio_is_valid(&priv->reset_gpio))
-		dm_gpio_set_value(&priv->reset_gpio, 0);
+		dm_gpio_set_value(&priv->reset_gpio, 1);
 
 	if (plat->delay.reset)
 		mdelay(plat->delay.reset);
 
 	if (dm_gpio_is_valid(&priv->reset_gpio))
-		dm_gpio_set_value(&priv->reset_gpio, 1);
+		dm_gpio_set_value(&priv->reset_gpio, 0);
 
 	if (plat->delay.init)
 		mdelay(plat->delay.init);

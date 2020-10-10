@@ -10,7 +10,7 @@
 #include <dt-bindings/input/input.h>
 
 / {
-	model = "Rockchip RK3326 ODROID-GO2";
+	model = "Rockchip RK3326 GAMEFORCE";
 	compatible = "rockchip,odroidgo2", "rockchip,rk3326";
 
 	backlight: backlight {
@@ -86,18 +86,6 @@
 			regulator-boot-on;
 			regulator-min-microvolt = <3800000>;
 			regulator-max-microvolt = <3800000>;
-		};
-
-		vcc_host: vcc_host {
-			compatible = "regulator-fixed";
-			regulator-name = "vcc_host";
-			regulator-min-microvolt = <5000000>;
-			regulator-max-microvolt = <5000000>;
-
-			//gpio = <&gpio0 RK_PB7 GPIO_ACTIVE_HIGH>;
-			enable-active-high;
-			regulator-always-on;
-			vin-supply = <&vccsys>;
 		};
 
 		rk817_pin0_ts: rk817_pin0_ts {
@@ -390,17 +378,13 @@
 
 &u2phy {
 	status = "okay";
-
-	u2phy_host: host-port {
-		status = "okay";
-	};
-
-	u2phy_otg: otg-port {
-		status = "disabled";
-	};
 };
 
-&usb20_otg {
+&u2phy_otg {
+	status = "okay";
+};
+
+&u2phy_host {
 	status = "okay";
 };
 

@@ -42,16 +42,16 @@
 		"sz_dtb=0xC8\0" \
 		"sz_logo=0x190\0" \
 		"st_logo_hardkernel=0x20C8\0" \
-		"st_logo_lowbatt=0x2258\0" \
-		"st_logo_recovery=0x23E8\0" \
-		"st_logo_err=0x2578\0" \
-		"st_logo_nosdcard=0x2708\0" \
-		"st_battery_0=0x2898\0" \
-		"st_battery_1=0x2A28\0" \
-		"st_battery_2=0x2BB8\0" \
-		"st_battery_3=0x2D48 \0" \
-		"st_battery_fail=0x2ED8\0" \
-		"sz_total=0x3068\0"
+		"st_logo_lowbatt=0x2578\0" \
+		"st_logo_recovery=0x2708\0" \
+		"st_logo_err=0x2898\0" \
+		"st_logo_nosdcard=0x2A28\0" \
+		"st_battery_0=0x2BB8\0" \
+		"st_battery_1=0x2D48\0" \
+		"st_battery_2=0x2ED8\0" \
+		"st_battery_3=0x3068 \0" \
+		"st_battery_fail=0x31F8\0" \
+		"sz_total=0x3388\0"
 
 #define ROCKCHIP_DEVICE_SETTINGS \
 		"stdout=serial,vidconsole\0" \
@@ -69,7 +69,7 @@
 #undef CONFIG_EXTRA_ENV_SETTINGS
 #define CONFIG_EXTRA_ENV_SETTINGS	\
 	"fdt_addr_r=0x01f00000\0" \
-	"dtb_name=rk3326-odroidgo2-linux.dtb\0" \
+	"dtb_name=rk3326-gameforce-linux.dtb\0" \
 	"loadaddr=0x100000\0" \
 	ENV_DEV_TYPE \
 	ENV_DEV_NUM \
@@ -85,13 +85,13 @@
 	"bootcmd=mmc dev 1; cfgload; run setbootargs;"	\
 		"load mmc 1:1 0x02000000 Image; "		\
 		"if test ${hwrev} = 'v11'; then " \
-			"load mmc 1:1 0x01f00000 rk3326-odroidgo2-linux-v11.dtb; "	\
+			"load mmc 1:1 0x01f00000 rk3326-gameforce-linux-v11.dtb; "	\
 		"else " \
 			"load mmc 1:1 0x01f00000 rk3326-odroidgo2-linux.dtb; "	\
 		"fi; "\
 		"booti 0x02000000 - 0x01f00000\0"
 
 #undef CONFIG_BOOTDELAY
-#define CONFIG_BOOTDELAY	1
+#define CONFIG_BOOTDELAY	0
 
 #endif

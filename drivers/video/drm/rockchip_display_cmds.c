@@ -472,9 +472,11 @@ int lcd_show_logo(void)
 		/* try logo image from spi flash */
 		bmp_copy = bmp_mem + LCD_LOGO_SIZE;
 
+        printf("Read boot logo 0x190/0x4B0 size from spi :20c8 - 8392 addr\n");
 		sprintf(cmd, "rksfc read %p %s %s", (void *)bmp_copy,
 			env_get("st_logo_hardkernel"),
-			env_get("sz_logo"));
+			"0x4B0");
+			//env_get("sz_logo"));
 		run_command(cmd, 0);
 
 		sprintf(cmd, "unzip %p %p", (void *)bmp_copy, (void *)bmp_mem);
